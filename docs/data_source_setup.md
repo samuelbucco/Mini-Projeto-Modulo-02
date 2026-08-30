@@ -2,101 +2,117 @@
 
 ## Decisão do conector
 
-A fonte recomendada para o dashboard é uma tabela nativa no BigQuery conectada ao Looker Studio.
+Para este projeto acadêmico e estático, a fonte recomendada é uma planilha Google conectada diretamente ao Looker Studio.
+
+A base completa continua disponível para auditoria e para uma eventual carga no BigQuery. Para o Google Sheets, o notebook gera uma segunda exportação contendo somente os 19 campos usados pelos KPIs, filtros e visuais do dashboard.
 
 Motivos:
 
-- A base tratada contém 342.697 linhas e 28 colunas.
-- O CSV consolidado possui 134,48 MB e ultrapassa o limite de 100 MB do conector de upload de arquivos do Looker Studio.
-- Uma planilha com 342.697 linhas e 28 colunas teria 9.595.516 células de dados, deixando pouca margem para o limite de 10 milhões de células do Google Sheets e oferecendo menor previsibilidade de desempenho.
-- O BigQuery preserva tipos, permite consultas sobre a base completa e possui conector nativo com o Looker Studio.
+- A fonte enxuta mantém as 342.697 linhas tratadas e todos os indicadores obrigatórios.
+- As 19 colunas ocupam 6.511.262 células com o cabeçalho, equivalentes a 65,11% do limite de 10 milhões de células.
+- A base não receberá atualizações periódicas.
+- O conector Google Sheets é nativo e gratuito no Looker Studio.
+- A solução evita a necessidade de projeto Google Cloud com faturamento habilitado.
 
-O BigQuery exige um projeto Google Cloud com faturamento habilitado e pode gerar custos de armazenamento e consulta. Antes da publicação, confirmar se o programa ou a turma fornece um projeto ou orientação institucional.
+O BigQuery permanece como alternativa caso a importação ou o desempenho da planilha não sejam satisfatórios.
 
 ## Arquivos preparados
 
-- Base gerada localmente: `output/data/BPS_20_26_SamuelBucco.csv`
-- Esquema explícito: `config/bigquery_schema.json`
+- Base completa: `output/data/BPS_20_26_SamuelBucco.csv`
+- Fonte enxuta: `output/data/BPS_20_26_SamuelBucco_GoogleSheets.csv`
+- Esquema da alternativa BigQuery: `config/bigquery_schema.json`
 
-O CSV é gerado pelo notebook e não deve ser versionado no Git devido ao tamanho. O esquema é versionado para preservar os tipos de identificadores, datas, medidas e indicadores de qualidade.
+Os arquivos CSV são gerados pelo notebook e permanecem fora do Git devido ao tamanho.
 
-Validação da exportação atual:
+Validação da fonte enxuta:
 
 | Propriedade | Resultado |
 |---|---|
-| Linhas | 342.697 |
-| Colunas | 28 |
-| Tamanho | 134,48 MB |
-| SHA-256 | `278233ec087aada9f1fa47a2aa071fc866ba09f0c212716468e45fd234c63ec9` |
+| Linhas de dados | 342.697 |
+| Colunas | 19 |
+| Células com cabeçalho | 6.511.262 |
+| Ocupação do limite | 65,11% |
+| Tamanho | 120,41 MB |
+| SHA-256 | `ccd5077f7f218785a34aa7ce34d3c4d5498264b4c7bc4883cdc92f2ee62fc3fd` |
 
 ## Formato do CSV
 
 - Codificação: UTF-8 sem BOM.
 - Separador: vírgula.
-- Cabeçalho: uma linha, com nomes únicos contendo letras e sublinhados.
+- Cabeçalho: uma linha, com nomes únicos.
 - Datas: `YYYY-MM-DD`.
-- CNPJs, código BR e Anvisa: texto.
 - Quantidades: inteiros.
 - Preços: valores decimais.
 - Valores nulos: campos vazios.
 - Quebras de linha internas: não permitidas.
+- Identificadores: prefixos textuais `CNPJ ` e `BR ` evitam a perda de zeros e a conversão automática em medidas.
 
 ## Fluxo recomendado
 
 ```text
-notebook -> CSV tratado -> Cloud Storage -> tabela BigQuery -> Looker Studio
+notebook -> CSV enxuto -> Google Sheets -> Looker Studio
 ```
 
-### 1. Gerar a base
+### 1. Gerar a fonte
 
-Execute todas as células de `notebooks/data_analysis.ipynb`. A última seção cria e valida o CSV em `output/data/`.
+Execute todas as células de `notebooks/data_analysis.ipynb`. A seção 15 cria e valida o arquivo `BPS_20_26_SamuelBucco_GoogleSheets.csv` em `output/data/`.
 
-### 2. Criar recursos no Google Cloud
+### 2. Importar no Google Sheets
 
-1. Criar ou selecionar um projeto Google Cloud.
-2. Confirmar que o faturamento está habilitado.
-3. Criar um bucket no Cloud Storage.
-4. Criar um dataset no BigQuery.
-5. Manter bucket e dataset na mesma localização.
+1. Criar uma planilha Google vazia.
+2. Acessar **Arquivo > Importar > Fazer upload**.
+3. Selecionar `BPS_20_26_SamuelBucco_GoogleSheets.csv`.
+4. Escolher **Substituir a planilha** ou **Inserir nova(s) página(s)**.
+5. Confirmar a vírgula como separador quando a detecção automática não a reconhecer.
+6. Renomear a aba importada para `bps_dashboard`.
 
-### 3. Enviar o CSV ao Cloud Storage
+Não adicionar fórmulas, totais ou abas auxiliares ao arquivo que contém a fonte. O Looker Studio deve realizar as agregações.
 
-O upload pode ser feito pelo Console do Google Cloud ou pela ferramenta `gcloud` quando configurada.
+### 3. Conferir a importação
 
-Não versionar credenciais, chaves, nomes privados de projetos ou arquivos `.env`.
+Antes da conexão, confirmar:
 
-### 4. Criar a tabela no BigQuery
+- 342.697 linhas de dados e uma linha de cabeçalho;
+- 19 colunas;
+- `id_instituicao`, `id_fornecedor` e `id_fabricante` iniciando com `CNPJ `;
+- `codigo_br` iniciando com `BR `;
+- datas reconhecidas como data;
+- quantidades e preços reconhecidos como números.
 
-Na criação da tabela:
-
-- Origem: Google Cloud Storage.
-- Formato: CSV.
-- Linha de cabeçalho a ignorar: `1`.
-- Separador: vírgula.
-- Codificação: UTF-8.
-- Esquema: utilizar `config/bigquery_schema.json`.
-- Correspondência das colunas: pelo nome quando disponível.
-
-Utilizar esquema explícito em vez de autodetecção, especialmente para evitar que CNPJs e códigos sejam convertidos em números e percam zeros à esquerda.
-
-### 5. Conectar ao Looker Studio
+### 4. Conectar ao Looker Studio
 
 1. Criar um relatório no Looker Studio.
-2. Selecionar o conector BigQuery.
-3. Escolher projeto, dataset e tabela.
-4. Revisar os tipos dos campos.
-5. Criar os campos calculados descritos em `docs/dashboard_spec.md`.
-6. Reconciliar os seis KPIs com os valores de referência antes de construir os demais visuais.
+2. Selecionar o conector **Google Sheets**.
+3. Escolher a planilha e a aba `bps_dashboard`.
+4. Manter a primeira linha como cabeçalho.
+5. Revisar os tipos dos campos.
+6. Criar os campos calculados descritos em `docs/dashboard_spec.md`.
+7. Reconciliar os seis KPIs antes de construir os demais visuais.
 
-## Alternativa sem BigQuery
+## KPIs de referência
 
-Se não houver acesso a um projeto Google Cloud com faturamento, uma alternativa para fins acadêmicos é criar fontes agregadas menores por página do dashboard. Essa alternativa reduz a interatividade e exige documentar claramente quais dimensões e filtros permanecem disponíveis.
+| KPI | Valor sem filtros |
+|---|---:|
+| Valor total registrado | R$ 78.557.477.974,09 |
+| Quantidade total de itens | 57.127.143.721 |
+| Registros de compra | 342.697 |
+| Instituições compradoras | 831 |
+| Fornecedores | 3.502 |
+| Preço unitário médio ponderado | 1,375134 |
 
-Não é recomendável usar o upload direto do CSV completo no Looker Studio porque a base consolidada excede o limite oficial. Também não é recomendável depender de uma única Google Sheet tão próxima do limite de células.
+## Plano alternativo: BigQuery
+
+Se o Google Sheets rejeitar a importação ou apresentar desempenho insuficiente, utilizar o fluxo:
+
+```text
+notebook -> CSV completo -> Cloud Storage -> BigQuery -> Looker Studio
+```
+
+Nesse caso, seguir o esquema `config/bigquery_schema.json`, preservar CNPJs e códigos como texto e considerar os custos de armazenamento e consulta.
 
 ## Referências oficiais
 
-- Upload de CSV no Looker Studio: https://docs.cloud.google.com/data-studio/upload-csv-files
+- Google Sheets e limite de células: https://support.google.com/drive/answer/37603
+- Importação de bases grandes: https://support.google.com/docs/answer/12236443
+- Conector Google Sheets do Looker Studio: https://cloud.google.com/looker/docs/studio/connect-to-google-sheets
 - Conexão do Looker Studio ao BigQuery: https://cloud.google.com/looker/docs/studio/connect-to-google-bigquery
-- Carregamento de CSV do Cloud Storage no BigQuery: https://docs.cloud.google.com/bigquery/docs/loading-data-cloud-storage-csv
-- Limites de arquivos do Google Sheets: https://support.google.com/drive/answer/37603
