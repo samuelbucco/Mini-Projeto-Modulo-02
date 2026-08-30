@@ -50,3 +50,7 @@ Desktop.ini
 *.swp
 *.swo
 *~
+
+# Bases consolidadas geradas pelo processo de ETL
+output/data/*.csv
+output/data/*.csv.gz

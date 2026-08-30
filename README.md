@@ -25,10 +25,14 @@ Diferenças de preços não são interpretadas isoladamente como comprovação d
 
 ```text
 .
+├── config/
+│   └── bigquery_schema.json
 ├── data/                  # Arquivos CSV anuais do BPS
 ├── docs/                  # Enunciado e dicionário de dados
+│   └── dashboard_spec.md  # Arquitetura, métricas e regras do dashboard
 ├── notebooks/
 │   └── data_analysis.ipynb
+├── output/data/           # Base consolidada gerada e ignorada pelo Git
 ├── .gitignore
 ├── README.md
 └── requirements.txt
@@ -109,8 +113,8 @@ Depois, abra `notebooks/data_analysis.ipynb`, selecione o kernel da `.venv` e ex
 
 ## Próximas etapas
 
-- Definir os visuais e filtros do dashboard.
-- Exportar a base consolidada tratada.
+- Construir os visuais e filtros conforme [`docs/dashboard_spec.md`](docs/dashboard_spec.md).
+- Gerar e carregar a base conforme [`docs/data_source_setup.md`](docs/data_source_setup.md).
 - Construir o dashboard no Looker Studio ou Power BI.
 - Documentar as descobertas e recomendações finais.
 - Adicionar imagens e o link do dashboard.
