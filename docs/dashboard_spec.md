@@ -100,6 +100,8 @@ Período | UF | Município | Produto | Modalidade | Mais filtros
 
 Os filtros de instituição, fornecedor e fabricante podem ficar em uma área secundária para evitar excesso de controles na primeira leitura.
 
+Na fonte otimizada para Google Sheets, os identificadores correspondentes são `id_instituicao`, `id_fornecedor` e `id_fabricante`. Seus valores recebem o prefixo `CNPJ ` para permanecerem textuais durante a importação. O campo `codigo_br` recebe o prefixo `BR ` pelo mesmo motivo.
+
 ## Campos calculados
 
 ### Valor total registrado
@@ -123,13 +125,13 @@ Record Count
 ### Instituições compradoras
 
 ```text
-COUNT_DISTINCT(cnpj_instituicao)
+COUNT_DISTINCT(id_instituicao)
 ```
 
 ### Fornecedores
 
 ```text
-COUNT_DISTINCT(cnpj_fornecedor)
+COUNT_DISTINCT(id_fornecedor)
 ```
 
 ### Preço unitário médio ponderado
