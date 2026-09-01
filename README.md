@@ -6,7 +6,7 @@ Mini-projeto do Módulo 2 do curso de Análise e Visualização de Dados do prog
 
 Desenvolver uma solução de Business Intelligence para acompanhar as compras de medicamentos e dispositivos médicos registradas no Banco de Preços em Saúde (BPS) entre 2020 e 2026.
 
-O projeto busca analisar a evolução dos valores registrados, a distribuição geográfica das compras, os principais produtos, instituições, fornecedores e fabricantes, além de identificar diferenças de preços que mereçam investigação.
+O projeto analisa a evolução dos valores registrados, a distribuição geográfica das compras e os principais produtos, instituições, fornecedores e fabricantes. O notebook também prepara análises exploratórias de diferenças de preços que podem orientar investigações posteriores.
 
 ## Contextualização
 
@@ -50,6 +50,7 @@ O notebook [`notebooks/data_analysis.ipynb`](notebooks/data_analysis.ipynb) cont
 6. Criação da base tratada `bps_clean`, disponível também pelo atalho `bps`.
 7. Diagnóstico e tratamento auditável dos dados.
 8. Análise exploratória e cálculo dos KPIs obrigatórios.
+9. Preparação e validação de uma fonte enxuta para o Google Sheets.
 
 ## Tratamentos e validações
 
@@ -84,6 +85,41 @@ Resultados das validações:
 
 O preço unitário médio ponderado global mistura produtos e apresentações distintas. Sua interpretação exige filtros que mantenham os itens comparáveis.
 
+## Dashboard no Looker Studio
+
+O dashboard foi concluído no Looker Studio com três páginas e identidade visual baseada em azul, cinza e fundo claro.
+
+### Página 1 - Visão geral
+
+- Seis cartões com os KPIs principais.
+- Série temporal do valor registrado por ano.
+- Valor registrado por unidade federativa.
+- Valor registrado por modalidade de compra.
+- Tabela anual com valor, quantidade e registros.
+
+### Página 2 - Compradores e mercado fornecedor
+
+- Ranking de municípios por valor registrado.
+- Ranking de instituições, identificadas pelo nome e CNPJ.
+- Ranking de fornecedores, identificados pelo nome e CNPJ.
+- Ranking de fabricantes por valor registrado.
+
+### Página 3 - Produtos e preços
+
+- Ranking de produtos por valor registrado.
+- Ranking de produtos por quantidade adquirida.
+- Evolução anual do preço unitário mediano para o produto selecionado.
+
+As três páginas utilizam controles de período, UF, município, modalidade e produto. A segunda página acrescenta o filtro de instituição compradora, enquanto a terceira utiliza unidade de fornecimento/capacidade para tornar as comparações mais consistentes.
+
+O painel sinaliza que 2026 é parcial, com cobertura observada até 05/03/2026, e apresenta uma nota metodológica para evitar interpretações isoladas de diferenças de preço. A especificação da versão implementada está em [`docs/dashboard_spec.md`](docs/dashboard_spec.md).
+
+## Fonte do dashboard
+
+O arquivo `output/data/BPS_20_26_SamuelBucco_GoogleSheets.csv` contém somente as colunas necessárias aos KPIs, filtros e visuais. Essa versão foi preparada para carregamento no Google Sheets e conexão com o Looker Studio, respeitando o limite de células da planilha.
+
+Os identificadores de instituições, fornecedores e fabricantes recebem o prefixo `CNPJ`, e os códigos de produtos recebem o prefixo `BR`, preservando-os como campos textuais durante a importação.
+
 ## Análises exploratórias iniciais
 
 - A base possui registros de 24 unidades federativas.
@@ -113,9 +149,6 @@ Depois, abra `notebooks/data_analysis.ipynb`, selecione o kernel da `.venv` e ex
 
 ## Próximas etapas
 
-- Construir os visuais e filtros conforme [`docs/dashboard_spec.md`](docs/dashboard_spec.md).
-- Gerar e carregar a base conforme [`docs/data_source_setup.md`](docs/data_source_setup.md).
-- Construir o dashboard no Looker Studio ou Power BI.
-- Documentar as descobertas e recomendações finais.
-- Adicionar imagens e o link do dashboard.
+- Realizar a conferência final dos filtros, interações e botões de navegação.
+- Adicionar imagens e o link público do dashboard.
 - Gravar o vídeo de apresentação.

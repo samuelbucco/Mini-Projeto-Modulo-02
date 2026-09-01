@@ -10,16 +10,16 @@ O painel deve apoiar exploração e investigação. Diferenças de preço não d
 
 - Gestores e analistas de compras públicas em saúde.
 - Identificação de períodos, localidades, instituições e produtos com maior volume registrado.
-- Priorização de itens comparáveis para investigação de diferenças de preço.
+- Acompanhamento da evolução do preço unitário mediano de produtos comparáveis.
 - Acompanhamento da participação de fornecedores, fabricantes e modalidades de compra.
 
-## Estrutura proposta
+## Estrutura implementada
 
 ### Página 1 - Visão geral
 
 Objetivo: apresentar o panorama executivo e a evolução temporal.
 
-KPIs obrigatórios:
+KPIs:
 
 1. Valor total registrado.
 2. Quantidade total de itens comprados.
@@ -35,7 +35,7 @@ Visuais:
 3. Barras do valor total por modalidade de compra.
 4. Tabela resumida anual com valor, quantidade e registros.
 
-Observação obrigatória: marcar 2026 como período parcial, com cobertura observada até 05/03/2026.
+O cabeçalho informa que 2026 é um período parcial, com cobertura observada até 05/03/2026.
 
 ### Página 2 - Compradores e mercado fornecedor
 
@@ -43,29 +43,24 @@ Objetivo: analisar a concentração geográfica e os participantes das compras.
 
 Visuais:
 
-1. Ranking de municípios por valor total.
-2. Ranking de instituições por valor total, identificadas pelo CNPJ.
-3. Ranking de fornecedores por valor total.
-4. Ranking de fabricantes por valor total.
-5. Tabela detalhada com participação, quantidade e número de registros.
+1. Barras horizontais com o ranking de municípios por valor total.
+2. Tabela de ranking de instituições por valor total, com nome e CNPJ.
+3. Tabela de ranking de fornecedores por valor total, com nome e CNPJ.
+4. Tabela de ranking de fabricantes por valor total.
 
-Drill-down recomendado:
-
-```text
-UF -> Município -> Instituição
-```
+Os rankings foram limitados ao espaço disponível e ordenados pelo valor registrado em ordem decrescente. A tabela detalhada inicialmente prevista foi retirada para preservar a legibilidade e evitar rolagem vertical excessiva.
 
 ### Página 3 - Produtos e preços
 
-Objetivo: identificar produtos relevantes e oportunidades de investigação de preços.
+Objetivo: identificar produtos relevantes e acompanhar a evolução do preço unitário mediano em recortes comparáveis.
 
 Visuais:
 
 1. Produtos com maior valor total.
 2. Produtos com maior quantidade adquirida.
 3. Evolução do preço unitário mediano para o produto selecionado.
-4. Distribuição ou tabela comparativa de preços por fornecedor.
-5. Tabela de candidatos a investigação, ordenada pela razão entre os percentis 90 e 10.
+
+Os rankings são apresentados em tabelas, pois as descrições dos produtos são extensas. A comparação por fornecedor e a tabela de candidatos por razão P90/P10 não integram a versão final, para manter o dashboard em três páginas sem comprometer a legibilidade.
 
 Para comparar preços, utilizar conjuntamente:
 
@@ -73,32 +68,32 @@ Para comparar preços, utilizar conjuntamente:
 - `descricao_catmat`;
 - `unidade_fornecimento_capacidade`;
 - período selecionado;
-- fabricante e fornecedor, quando aplicável.
+- filtros geográficos e de modalidade, quando aplicáveis.
 
 Não utilizar a soma de `preco_unitario`.
 
-## Filtros
+## Filtros implementados
 
-Filtros globais:
+Filtros comuns às três páginas:
 
 - Ano ou intervalo da data de compra.
 - UF.
 - Município.
-- Instituição compradora.
 - Código BR/CATMAT ou descrição do produto.
-- Unidade de fornecimento/capacidade.
 - Modalidade da compra.
-- Tipo da compra.
-- Fornecedor.
-- Fabricante.
 
-Ordem recomendada na interface:
+Ordem na interface:
 
 ```text
-Período | UF | Município | Produto | Modalidade | Mais filtros
+Período | UF | Município | Modalidade | Produto
 ```
 
-Os filtros de instituição, fornecedor e fabricante podem ficar em uma área secundária para evitar excesso de controles na primeira leitura.
+Filtros específicos:
+
+- Página 2: Instituição compradora.
+- Página 3: Unidade de fornecimento/capacidade, no lugar do filtro de instituição.
+
+A quantidade de controles foi deliberadamente limitada para preservar espaço e clareza. Tipo da compra, fornecedor e fabricante permanecem disponíveis como dimensões da fonte, mas não como filtros visíveis na versão final.
 
 Na fonte otimizada para Google Sheets, os identificadores correspondentes são `id_instituicao`, `id_fornecedor` e `id_fabricante`. Seus valores recebem o prefixo `CNPJ ` para permanecerem textuais durante a importação. O campo `codigo_br` recebe o prefixo `BR ` pelo mesmo motivo.
 
@@ -140,52 +135,42 @@ COUNT_DISTINCT(id_fornecedor)
 SUM(preco_total) / SUM(qtd_itens_comprados)
 ```
 
-### Participação no valor total
-
-```text
-SUM(preco_total) / SUM(preco_total) OVER()
-```
-
-Se a fonte ou o conector não aceitar a função analítica, calcular a participação com comparação ao total do gráfico ou preparar o campo antes da conexão.
-
 ## Interações
 
 - Seleções nos gráficos devem filtrar os demais visuais da página.
-- Rankings devem permitir ordenação por valor, quantidade ou registros.
-- O clique em uma UF deve restringir municípios e instituições.
-- O clique em um produto deve restringir os gráficos de preço.
+- Rankings são ordenados pela métrica principal em ordem decrescente.
+- Os controles de UF e município restringem os visuais das respectivas páginas.
+- O clique em um produto restringe o gráfico de preço mediano.
 - Deve existir uma forma clara de limpar os filtros.
-- Títulos precisam refletir o contexto selecionado sempre que possível.
+- Botões permitem avançar e retornar entre as páginas; a última página apresenta somente o retorno.
 
 ## Hierarquia visual
 
-1. Título, período coberto e aviso de parcialidade.
-2. Filtros globais.
-3. Seis cartões de KPI.
-4. Visual principal da página.
-5. Rankings e tabelas de apoio.
-6. Nota metodológica e data de atualização.
+1. Título geral e título temático da página.
+2. Período coberto e aviso de parcialidade.
+3. Filtros.
+4. Cartões de KPI na visão geral ou rankings nas páginas analíticas.
+5. Gráficos e tabelas de apoio.
+6. Fonte, nota metodológica e data de atualização.
 
 ## Identidade visual
 
 - Fundo claro e alto contraste.
-- Verde escuro como cor principal, associado à saúde e à gestão pública.
-- Verde médio para séries principais.
-- Azul como cor secundária de comparação.
-- Laranja apenas para alertas e períodos parciais.
-- Cinza para eixos, grades e informações secundárias.
+- Azul como cor principal nos botões, divisórias, cabeçalhos de tabelas e séries de dados.
+- Cinza-escuro nos títulos e textos principais.
+- Cinza-claro nos fundos, eixos, grades, bordas e linhas alternadas das tabelas.
+- Branco no interior dos cartões, controles e áreas de visualização.
 - Evitar arco-íris categórico, efeitos 3D e excesso de bordas.
 
-Paleta sugerida:
+Paleta de referência:
 
 | Uso | Cor |
 |---|---|
-| Verde principal | `#1B5E20` |
-| Verde de dados | `#43A047` |
-| Azul secundário | `#1565C0` |
-| Laranja de atenção | `#EF6C00` |
-| Texto principal | `#1F2937` |
-| Fundo | `#F7F9F8` |
+| Azul principal | `#4285E4` |
+| Texto e títulos | `#616161` |
+| Linhas e bordas | `#D0D0D0` |
+| Fundo da página | `#F5F5F5` |
+| Fundo dos componentes | `#FFFFFF` |
 
 ## Formatação
 
@@ -201,7 +186,10 @@ Paleta sugerida:
 - Confirmar que filtros alteram todos os cartões esperados.
 - Verificar que nenhum gráfico soma `preco_unitario`.
 - Conferir que 2026 aparece como parcial.
+- Confirmar que a evolução do preço mediano responde à seleção de produto e unidade de fornecimento.
 - Validar amostras de produtos comparáveis diretamente na base.
+- Conferir a ordenação decrescente e a formatação monetária dos rankings.
+- Testar todos os botões de navegação entre as três páginas.
 - Manter as 12 inserções anteriores à compra sinalizadas, sem exclusão automática.
 
 ## Valores de referência para validação inicial
