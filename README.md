@@ -2,6 +2,12 @@
 
 Mini-projeto do Módulo 2 do curso de Análise e Visualização de Dados do programa SC Tec.
 
+## Acesso ao projeto
+
+- [Repositório no GitHub](https://github.com/samuelbucco/Mini-Projeto-Modulo-02)
+- [Dashboard no Looker Studio](https://datastudio.google.com/reporting/c172b911-722d-4069-b177-48da86400a91)
+- [Vídeo de apresentação](https://drive.google.com/file/d/1t_AkSEyd4kHOFbxMYVcQq31lXnmXGl_n/view?usp=sharing)
+
 ## Objetivo
 
 Desenvolver uma solução de Business Intelligence para acompanhar as compras de medicamentos e dispositivos médicos registradas no Banco de Preços em Saúde (BPS) entre 2020 e 2026.
@@ -147,8 +153,6 @@ pip install -r requirements.txt
 
 Depois, abra `notebooks/data_analysis.ipynb`, selecione o kernel da `.venv` e execute as células em ordem.
 
-## Próximas etapas
+## Status do projeto
 
-- Realizar a conferência final dos filtros, interações e botões de navegação.
-- Adicionar imagens e o link público do dashboard.
-- Gravar o vídeo de apresentação.
+Mini-projeto concluído, com código, dashboard interativo e vídeo de apresentação disponíveis nos links acima.
